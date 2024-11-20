@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Panel Selector</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    #grid {
+      display: grid;
+      gap: 0; /* Remove spacing between cells */
+      grid-template-columns: repeat(5, 1fr); /* 5 columns */
+      width: 90vw;
+      height: 80vh; /* Increase height */
+    }
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem; /* Larger font size */
+      font-weight: bold;
+      text-align: center;
+      color: black; /* Black text for visibility */
+      border: 1px solid #ccc;
+      background-color: white;
+      text-shadow: 2px 2px 0 white, -2px 2px 0 white, 2px -2px 0 white, -2px -2px 0 white; /* White outline for text */
+      transition: transform 0.3s, border 0.3s;
+    }
+    .highlight {
+      border: 5px solid gold; /* Gold border for highlighted item */
+      background-color: white;
+    }
+    .selected {
+      animation: zoom 5s ease-in-out 3; /* 5 seconds duration, repeated 3 times */
+    }
+    @keyframes zoom {
+      0% {
+        transform: scale(1);
+      }
+      33% {
+        transform: scale(1.7); /* Larger scaling for emphasis */
+      }
+      66% {
+        transform: scale(1);
+      }
+      100% {
+        transform: scale(1.7);
+      }
+    }
+    button {
+      margin: 20px 10px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="grid"></div>
+  <button id="startButton">すたあと！</button>
+  <button id="stopButton" disabled>すとっぷ！</button>
+
+  <script>
+    const grid = document.getElementById('grid');
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const rows = 4; // Grid rows
+const cols = 5; // Grid columns
+let interval = null; // Store the interval ID
+let isRunning = false; // Track if the roulette is running
+let currentIndex = null; // Track the currently highlighted cell
+
+// Item definitions
+const items = [
+  { name: 'あそび', count: 4, color: 'blue' },
+  { name: 'たべもの', count: 4, color: 'red' },
+  { name: 'いろ', count: 4, color: 'green' },
+  { name: 'いんたびゅう', count: 4, color: 'yellow' },
+  { name: 'きゃらくたあ', count: 2, color: 'purple' },
+  { name: 'ばしょ', count: 2, color: 'pink' },
+];
+
+function generateShuffledGrid() {
+  const itemPool = [];
+  items.forEach(item => {
+    for (let i = 0; i < item.count; i++) {
+      itemPool.push(item);
+    }
+  });
+
+  // Shuffle items
+  for (let i = itemPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [itemPool[i], itemPool[j]] = [itemPool[j], itemPool[i]];
+  }
+
+  // Create grid cells
+  itemPool.forEach((item, index) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = item.name;
+    cell.style.backgroundColor = item.color;
+    cell.dataset.originalColor = item.color; // Save the original color in a custom data attribute
+    grid.appendChild(cell);
+  });
+
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`; // Adjust grid rows
+}
+
+function startRoulette() {
+  const cells = document.querySelectorAll('.cell');
+
+  if (isRunning) return; // Prevent multiple starts
+  isRunning = true;
+  stopButton.disabled = false;
+  startButton.disabled = true;
+
+  interval = setInterval(() => {
+    // Remove highlight from the previous cell
+    if (currentIndex !== null) {
+      cells[currentIndex].classList.remove('highlight');
+      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor; // Restore the original background color
+    }
+
+    // Select a new random cell to highlight
+    currentIndex = Math.floor(Math.random() * cells.length);
+    cells[currentIndex].classList.add('highlight');
+    cells[currentIndex].style.backgroundColor = 'white'; // Highlight background
+  }, 140);
+}
+
+function stopRoulette() {
+  const cells = document.querySelectorAll('.cell');
+  if (!isRunning) return; // Prevent stopping when not running
+  clearInterval(interval);
+  isRunning = false;
+  stopButton.disabled = true;
+  startButton.disabled = false;
+
+  // Keep the last highlighted cell
+  if (currentIndex !== null) {
+    cells[currentIndex].classList.add('selected');
+    setTimeout(() => {
+      cells[currentIndex].classList.remove('selected', 'highlight');
+      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor; // Restore the original background color
+    }, 5000); // Duration of the animation (5 seconds)
+  }
+}
+
+
+startButton.addEventListener('click', startRoulette);
+stopButton.addEventListener('click', stopRoulette);
+
+// Initialize the grid
+generateShuffledGrid();
+
+  </script>
+</body>
+</html>
