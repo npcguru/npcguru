@@ -75,6 +75,8 @@
       background-color: #0056b3;
     }
   </style>
+<audio id="coinSound" src="coin.mp3" loop></audio>
+<audio id="rouletteSound" src="roulette.mp3"></audio>
 </head>
 <body>
   <div id="grid"></div>
@@ -129,6 +131,9 @@ function generateShuffledGrid() {
   grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`; // Adjust grid rows
 }
 
+const coinSound = document.getElementById('coinSound');
+const rouletteSound = document.getElementById('rouletteSound');
+
 function startRoulette() {
   const cells = document.querySelectorAll('.cell');
 
@@ -137,18 +142,18 @@ function startRoulette() {
   stopButton.disabled = false;
   startButton.disabled = true;
 
+  coinSound.play(); // Start looping coin sound
+
   interval = setInterval(() => {
-    // Remove highlight from the previous cell
     if (currentIndex !== null) {
       cells[currentIndex].classList.remove('highlight');
-      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor; // Restore the original background color
+      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor;
     }
 
-    // Select a new random cell to highlight
     currentIndex = Math.floor(Math.random() * cells.length);
     cells[currentIndex].classList.add('highlight');
-    cells[currentIndex].style.backgroundColor = 'white'; // Highlight background
-  }, 140);
+    cells[currentIndex].style.backgroundColor = 'gold';
+  }, 100);
 }
 
 function stopRoulette() {
@@ -159,15 +164,20 @@ function stopRoulette() {
   stopButton.disabled = true;
   startButton.disabled = false;
 
-  // Keep the last highlighted cell
+  coinSound.pause(); // Stop the coin sound
+  coinSound.currentTime = 0; // Reset the audio to the beginning
+
+  rouletteSound.play(); // Play the roulette sound once
+
   if (currentIndex !== null) {
     cells[currentIndex].classList.add('selected');
     setTimeout(() => {
       cells[currentIndex].classList.remove('selected', 'highlight');
-      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor; // Restore the original background color
+      cells[currentIndex].style.backgroundColor = cells[currentIndex].dataset.originalColor;
     }, 5000); // Duration of the animation (5 seconds)
   }
 }
+
 
 
 startButton.addEventListener('click', startRoulette);
